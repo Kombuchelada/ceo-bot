@@ -165,13 +165,40 @@ async def _ask_claude(content_blocks: list[dict[str, Any]]) -> str:
     return "".join(b.text for b in resp.content if b.type == "text")
 
 
+def _kind_tokens(content_type: str | None) -> str:
+    """Words to seed the FTS body so generic queries like 'image' / 'video' match."""
+    if not content_type:
+        return ""
+    if content_type.startswith("image/"):
+        return "image photo picture screenshot attachment"
+    if content_type.startswith("video/"):
+        return "video clip recording attachment"
+    if content_type.startswith("audio/"):
+        return "audio voice recording attachment"
+    return "attachment"
+
+
 def _write_result(attachment_id: int, ocr: str, summary: str, transcript: str = "") -> None:
-    body = " ".join(filter(None, [ocr, summary, transcript])).strip()
     with cursor() as cur:
         cur.execute(
             "UPDATE attachments SET ocr_text=?, summary=?, transcript=? WHERE id=?",
             (ocr or None, summary or None, transcript or None, attachment_id),
         )
+        att = cur.execute(
+            "SELECT filename, content_type FROM attachments WHERE id=?", (attachment_id,)
+        ).fetchone()
+        body = " ".join(
+            filter(
+                None,
+                [
+                    _kind_tokens(att["content_type"]) if att else "",
+                    att["filename"] if att else "",
+                    ocr,
+                    summary,
+                    transcript,
+                ],
+            )
+        ).strip()
         # Refresh FTS row (contentless table)
         cur.execute("DELETE FROM attachments_fts WHERE rowid=?", (attachment_id,))
         if body:
