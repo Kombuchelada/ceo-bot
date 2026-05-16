@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 from datetime import UTC, datetime
 
@@ -9,6 +10,7 @@ import structlog
 from ceo_bot import storage
 from ceo_bot.claude import run_turn
 from ceo_bot.db import cursor
+from ceo_bot.enrichment import enrich_attachment
 
 log = structlog.get_logger()
 
@@ -26,6 +28,7 @@ def should_respond(message: discord.Message, bot_user: discord.ClientUser | None
 
 async def archive_message(message: discord.Message) -> None:
     now = datetime.now(UTC).isoformat()
+    enrich_jobs: list[tuple[int, str | None, bytes]] = []
     with cursor() as cur:
         cur.execute(
             """
@@ -63,6 +66,10 @@ async def archive_message(message: discord.Message) -> None:
                 """,
                 (message.id, att.filename, att.content_type, att.size, sha, key, now),
             )
+            enrich_jobs.append((cur.lastrowid, att.content_type, data))
+
+    for attachment_id, ct, data in enrich_jobs:
+        asyncio.create_task(enrich_attachment(attachment_id, ct, data))
 
     log.info(
         "message.archived",

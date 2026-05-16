@@ -52,9 +52,16 @@ CREATE TABLE IF NOT EXISTS attachments (
     s3_key        TEXT NOT NULL,
     ocr_text      TEXT,
     transcript    TEXT,
+    summary       TEXT,
     created_at    TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_attachments_message ON attachments(message_id);
+
+CREATE VIRTUAL TABLE IF NOT EXISTS attachments_fts USING fts5(
+    body,
+    content='',
+    contentless_delete=1
+);
 
 CREATE TABLE IF NOT EXISTS reminders (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -123,3 +130,8 @@ def init_db() -> None:
     settings.database_path.parent.mkdir(parents=True, exist_ok=True)
     with cursor() as cur:
         cur.executescript(SCHEMA)
+        existing_cols = {
+            r["name"] for r in cur.execute("PRAGMA table_info(attachments)").fetchall()
+        }
+        if "summary" not in existing_cols:
+            cur.execute("ALTER TABLE attachments ADD COLUMN summary TEXT")
