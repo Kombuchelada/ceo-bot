@@ -3,7 +3,8 @@
 Usage:
     python scripts/google_oauth.py <discord_user_id>
 
-Opens a browser for the OAuth consent, stores encrypted refresh token in SQLite.
+Prints an auth URL — open it in a browser, approve, paste the code back.
+Stores the encrypted refresh token in SQLite.
 """
 
 from __future__ import annotations
@@ -31,12 +32,12 @@ def main() -> None:
                 "client_secret": settings.google_oauth_client_secret,
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
-                "redirect_uris": [settings.google_oauth_redirect_uri],
+                "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob"],
             }
         },
         SCOPES,
     )
-    creds = flow.run_local_server(port=8765)
+    creds = flow.run_console()
     store_credentials(user_id, creds)
     print(f"stored credentials for user {user_id}")
 

@@ -27,3 +27,6 @@ build/
 
 # Local Claude Code state
 .claude/
+
+# Context brief for in-container Claude (not for the repo)
+CONTEXT.md
