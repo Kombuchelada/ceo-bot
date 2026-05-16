@@ -42,6 +42,26 @@ _TOOL_DISPATCH = {
 }
 
 
+def _block_type(b: Any) -> str | None:
+    return b.get("type") if isinstance(b, dict) else None
+
+
+def _has_block_type(content: Any, kind: str) -> bool:
+    return isinstance(content, list) and any(_block_type(b) == kind for b in content)
+
+
+def _trim_to_valid_history(msgs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Ensure the slice we send to Anthropic is structurally valid:
+    - It must start with a user turn that contains no orphaned tool_result blocks.
+    - It must not end with an assistant turn whose tool_use blocks have no following tool_result.
+    """
+    while msgs and (msgs[0]["role"] != "user" or _has_block_type(msgs[0]["content"], "tool_result")):
+        msgs.pop(0)
+    while msgs and msgs[-1]["role"] == "assistant" and _has_block_type(msgs[-1]["content"], "tool_use"):
+        msgs.pop()
+    return msgs
+
+
 def _load_history(thread_key: str, limit: int = 20) -> list[dict[str, Any]]:
     with cursor() as cur:
         rows = cur.execute(
@@ -52,7 +72,8 @@ def _load_history(thread_key: str, limit: int = 20) -> list[dict[str, Any]]:
             """,
             (thread_key, limit),
         ).fetchall()
-    return [{"role": r["role"], "content": json.loads(r["content_json"])} for r in reversed(rows)]
+    msgs = [{"role": r["role"], "content": json.loads(r["content_json"])} for r in reversed(rows)]
+    return _trim_to_valid_history(msgs)
 
 
 def _save_turn(thread_key: str, role: str, content: Any) -> None:
