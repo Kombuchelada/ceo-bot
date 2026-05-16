@@ -19,6 +19,7 @@ dependencies = [
     "cryptography>=43.0.0",
     "Pillow>=11.0.0",
     "pillow-heif>=0.18.0",
+    "trafilatura>=2.0.0",
 ]
 
 [project.optional-dependencies]

@@ -26,6 +26,10 @@ short descriptions are stored alongside the message and are searchable via
 search_history. Generic queries like "image", "photo", "video", or "attachment"
 will surface those rows even when the user doesn't recall specific content.
 
+URLs shared in messages are also fetched and summarized in the background; the
+summaries are searchable too. Use queries like "link", a domain name (e.g.
+"nytimes"), or topic keywords to find them.
+
 When asked about anything historical (past messages, images, videos, what was
 said about X), ALWAYS call search_history before answering. The FTS index is
 the source of truth — your conversation memory is not. Even if an earlier turn

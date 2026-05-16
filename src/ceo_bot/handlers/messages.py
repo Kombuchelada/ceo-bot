@@ -11,6 +11,7 @@ from ceo_bot import storage
 from ceo_bot.claude import run_turn
 from ceo_bot.db import cursor
 from ceo_bot.enrichment import enrich_attachment
+from ceo_bot.links import schedule_links_for_message
 
 log = structlog.get_logger()
 
@@ -70,6 +71,8 @@ async def archive_message(message: discord.Message) -> None:
 
     for attachment_id, ct, data in enrich_jobs:
         asyncio.create_task(enrich_attachment(attachment_id, ct, data))
+
+    schedule_links_for_message(message.id, message.content)
 
     log.info(
         "message.archived",

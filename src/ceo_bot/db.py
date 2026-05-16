@@ -98,6 +98,25 @@ CREATE TABLE IF NOT EXISTS oauth_tokens (
     PRIMARY KEY (user_id, provider)
 );
 
+CREATE TABLE IF NOT EXISTS link_summaries (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    url             TEXT NOT NULL UNIQUE,
+    title           TEXT,
+    summary         TEXT,
+    status          TEXT NOT NULL DEFAULT 'pending', -- pending | success | failed | skipped
+    error           TEXT,
+    first_message_id INTEGER REFERENCES messages(id),
+    fetched_at      TEXT,
+    created_at      TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_link_summaries_status ON link_summaries(status);
+
+CREATE VIRTUAL TABLE IF NOT EXISTS links_fts USING fts5(
+    body,
+    content='',
+    contentless_delete=1
+);
+
 CREATE TABLE IF NOT EXISTS conversation_turns (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     thread_key    TEXT NOT NULL,                  -- channel_id or thread_id
