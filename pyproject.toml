@@ -1,0 +1,47 @@
+[project]
+name = "ceo-bot"
+version = "0.1.0"
+description = "Discord bot that archives our messages and uses Claude to help us run our lives."
+requires-python = ">=3.12"
+dependencies = [
+    "discord.py>=2.4.0",
+    "anthropic>=0.40.0",
+    "boto3>=1.35.0",
+    "apscheduler>=3.10.4",
+    "google-auth>=2.35.0",
+    "google-auth-oauthlib>=1.2.1",
+    "google-api-python-client>=2.149.0",
+    "httpx>=0.27.0",
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.6.0",
+    "python-dotenv>=1.0.1",
+    "structlog>=24.4.0",
+    "cryptography>=43.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.7.0",
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+]
+
+[project.scripts]
+ceo-bot = "ceo_bot.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ceo_bot"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC", "SIM"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

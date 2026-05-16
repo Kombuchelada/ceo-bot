@@ -1,0 +1,31 @@
+{
+  "name": "ceo-bot",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "remoteUser": "dev",
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "mounts": [
+    "source=ceo-bot-claude,target=/home/dev/.claude,type=volume",
+    "source=ceo-bot-config,target=/home/dev/.config,type=volume",
+    "source=ceo-bot-cache,target=/home/dev/.cache,type=volume",
+    "source=ceo-bot-zsh-history,target=/home/dev/.zsh_history,type=volume"
+  ],
+  "containerEnv": {
+    "SHELL": "/usr/bin/zsh"
+  },
+  "postCreateCommand": "pip install -e '.[dev]' && pre-commit install --install-hooks 2>/dev/null || true",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "ms-azuretools.vscode-docker"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh"
+      }
+    }
+  }
+}
