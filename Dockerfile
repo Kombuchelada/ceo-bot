@@ -23,6 +23,5 @@ RUN useradd --create-home --uid 1000 app \
     && mkdir -p /data && chown -R app:app /data /app
 USER app
 
-VOLUME ["/data"]
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["python", "-m", "ceo_bot"]
