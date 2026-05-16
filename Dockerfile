@@ -19,9 +19,5 @@ COPY src ./src
 
 RUN pip install --upgrade pip && pip install .
 
-RUN useradd --create-home --uid 1000 app \
-    && mkdir -p /data && chown -R app:app /data /app
-USER app
-
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["python", "-m", "ceo_bot"]
