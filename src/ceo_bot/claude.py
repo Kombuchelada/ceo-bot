@@ -120,9 +120,15 @@ async def run_turn(thread_key: str, user_id: int, channel_id: int, user_text: st
             if handler is None:
                 result = {"error": f"unknown tool: {block.name}"}
             else:
+                log.info("tool.call", tool=block.name, input=block.input)
                 try:
                     result = await handler(
                         user_id=user_id, channel_id=channel_id, **block.input
+                    )
+                    log.info(
+                        "tool.result",
+                        tool=block.name,
+                        result_preview=json.dumps(result)[:300],
                     )
                 except Exception as exc:  # surface to the model
                     log.exception("tool.failed", tool=block.name)
