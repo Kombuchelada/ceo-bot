@@ -77,6 +77,7 @@ async def respond_with_claude(bot: discord.Client, message: discord.Message) -> 
         reply = await run_turn(
             thread_key=str(message.channel.id),
             user_id=message.author.id,
+            channel_id=message.channel.id,
             user_text=message.clean_content,
         )
     if reply:

@@ -63,7 +63,7 @@ def _save_turn(thread_key: str, role: str, content: Any) -> None:
         )
 
 
-async def run_turn(thread_key: str, user_id: int, user_text: str) -> str:
+async def run_turn(thread_key: str, user_id: int, channel_id: int, user_text: str) -> str:
     """Run one Claude turn, executing tool calls until the model produces a text reply."""
     now_iso = datetime.now(UTC).isoformat()
     user_block = [{"type": "text", "text": f"[utc={now_iso}] {user_text}"}]
@@ -95,7 +95,9 @@ async def run_turn(thread_key: str, user_id: int, user_text: str) -> str:
                 result = {"error": f"unknown tool: {block.name}"}
             else:
                 try:
-                    result = await handler(user_id=user_id, **block.input)
+                    result = await handler(
+                        user_id=user_id, channel_id=channel_id, **block.input
+                    )
                 except Exception as exc:  # surface to the model
                     log.exception("tool.failed", tool=block.name)
                     result = {"error": str(exc)}

@@ -9,7 +9,7 @@ from ceo_bot.db import cursor
 TOOL_SCHEMA: dict[str, Any] = {
     "name": "set_reminder",
     "description": (
-        "Schedule a reminder to be sent in the Discord channel at a future time. "
+        "Schedule a reminder to be posted in the current Discord channel at a future time. "
         "Use this when the user (or both users together) agree on something they want "
         "to be nudged about later."
     ),
@@ -20,21 +20,20 @@ TOOL_SCHEMA: dict[str, Any] = {
                 "type": "string",
                 "description": "ISO 8601 UTC timestamp for when to fire (e.g. 2026-05-20T17:00:00Z).",
             },
-            "channel_id": {
-                "type": "integer",
-                "description": "Discord channel ID to post the reminder in.",
-            },
             "user_ids": {
                 "type": "array",
                 "items": {"type": "integer"},
-                "description": "Discord user IDs to mention. Empty = no mentions.",
+                "description": (
+                    "Discord user IDs to @mention. Omit to mention the requesting user. "
+                    "Use both users' IDs only if both should be pinged."
+                ),
             },
             "payload": {
                 "type": "string",
                 "description": "Short reminder text (under 200 chars).",
             },
         },
-        "required": ["due_at_iso", "channel_id", "payload"],
+        "required": ["due_at_iso", "payload"],
     },
 }
 
@@ -42,8 +41,8 @@ TOOL_SCHEMA: dict[str, Any] = {
 async def run(
     *,
     user_id: int,
-    due_at_iso: str,
     channel_id: int,
+    due_at_iso: str,
     payload: str,
     user_ids: list[int] | None = None,
 ) -> dict[str, Any]:

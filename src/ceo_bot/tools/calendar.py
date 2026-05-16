@@ -38,6 +38,7 @@ async def run(
     end_iso: str,
     description: str = "",
     location: str = "",
+    **_: Any,
 ) -> dict[str, Any]:
     return await create_event(
         user_id=user_id,

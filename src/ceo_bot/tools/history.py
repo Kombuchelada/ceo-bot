@@ -28,7 +28,7 @@ TOOL_SCHEMA: dict[str, Any] = {
 }
 
 
-async def run(*, user_id: int, query: str, limit: int = 20) -> dict[str, Any]:
+async def run(*, user_id: int, query: str, limit: int = 20, **_: Any) -> dict[str, Any]:
     limit = max(1, min(int(limit), 50))
     with cursor() as cur:
         rows = cur.execute(
