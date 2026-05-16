@@ -9,6 +9,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from ceo_bot.backups import run_weekly_backup
 from ceo_bot.db import cursor
+from ceo_bot.summaries import run_weekly_summary
 
 log = structlog.get_logger()
 
@@ -42,5 +43,14 @@ def start_scheduler(bot: discord.Client) -> AsyncIOScheduler:
     sched = AsyncIOScheduler(timezone="UTC")
     sched.add_job(_dispatch_due_reminders, "interval", seconds=30, args=[bot])
     sched.add_job(run_weekly_backup, "cron", day_of_week="sun", hour=2, minute=0)
+    sched.add_job(
+        run_weekly_summary,
+        "cron",
+        day_of_week="sun",
+        hour=20,
+        minute=0,
+        timezone="America/Los_Angeles",
+        args=[bot],
+    )
     sched.start()
     return sched

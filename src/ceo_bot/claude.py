@@ -12,6 +12,7 @@ from ceo_bot.db import cursor
 from ceo_bot.tools import calendar as tool_calendar
 from ceo_bot.tools import history as tool_history
 from ceo_bot.tools import reminders as tool_reminders
+from ceo_bot.tools import stats as tool_stats
 
 log = structlog.get_logger()
 
@@ -48,12 +49,14 @@ TOOLS: list[dict[str, Any]] = [
     tool_reminders.TOOL_SCHEMA,
     tool_calendar.TOOL_SCHEMA,
     tool_history.TOOL_SCHEMA,
+    tool_stats.TOOL_SCHEMA,
 ]
 
 _TOOL_DISPATCH = {
     tool_reminders.TOOL_SCHEMA["name"]: tool_reminders.run,
     tool_calendar.TOOL_SCHEMA["name"]: tool_calendar.run,
     tool_history.TOOL_SCHEMA["name"]: tool_history.run,
+    tool_stats.TOOL_SCHEMA["name"]: tool_stats.run,
 }
 
 
