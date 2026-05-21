@@ -2,8 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class HouseholdMember(BaseModel):
+    discord_id: int
+    name: str
+    email: str
 
 
 class Settings(BaseSettings):
@@ -27,6 +33,10 @@ class Settings(BaseSettings):
     google_oauth_client_id: str = ""
     google_oauth_client_secret: str = ""
 
+    # JSON list of {discord_id, name, email}. e.g.:
+    #   HOUSEHOLD_MEMBERS='[{"discord_id":12345,"name":"Daniel","email":"d@x.com"}]'
+    household_members: list[HouseholdMember] = Field(default_factory=list)
+
     token_encryption_key: str
 
     enable_media_ocr: bool = True
@@ -37,6 +47,10 @@ class Settings(BaseSettings):
     @property
     def allowed_user_ids(self) -> set[int]:
         return {int(x) for x in self.discord_allowed_user_ids.split(",") if x.strip()}
+
+    @property
+    def household_by_id(self) -> dict[int, HouseholdMember]:
+        return {m.discord_id: m for m in self.household_members}
 
 
 settings = Settings()  # type: ignore[call-arg]

@@ -2,13 +2,28 @@ from __future__ import annotations
 
 from typing import Any
 
+from ceo_bot.config import settings
 from ceo_bot.integrations.google_calendar import create_event
+
+
+def _roster_hint() -> str:
+    members = settings.household_members
+    if not members:
+        return ""
+    listing = ", ".join(f"{m.name}=discord_id {m.discord_id}" for m in members)
+    return f" Known household members: {listing}."
+
 
 TOOL_SCHEMA: dict[str, Any] = {
     "name": "create_calendar_event",
     "description": (
-        "Create a Google Calendar event on the user's primary calendar. "
-        "Requires the user to have completed Google OAuth (use /auth google in Discord)."
+        "Create a Google Calendar event. By default it lands on the requester's "
+        "primary calendar. To include other household members, pass their Discord "
+        "IDs in attendee_user_ids — members who have OAuth'd get the event written "
+        "directly to their primary calendar; members who haven't get a standard "
+        "email invite."
+        + _roster_hint()
+        + " Requires the requester to have completed Google OAuth (/auth google)."
     ),
     "input_schema": {
         "type": "object",
@@ -24,6 +39,15 @@ TOOL_SCHEMA: dict[str, Any] = {
             },
             "description": {"type": "string", "description": "Optional event description."},
             "location": {"type": "string", "description": "Optional location."},
+            "attendee_user_ids": {
+                "type": "array",
+                "items": {"type": "integer"},
+                "description": (
+                    "Discord IDs of OTHER household members to include on the event. "
+                    "Omit or leave empty for solo events. Don't include the requester's "
+                    "own ID — they're added automatically."
+                ),
+            },
         },
         "required": ["summary", "start_iso", "end_iso"],
     },
@@ -38,6 +62,7 @@ async def run(
     end_iso: str,
     description: str = "",
     location: str = "",
+    attendee_user_ids: list[int] | None = None,
     **_: Any,
 ) -> dict[str, Any]:
     return await create_event(
@@ -47,4 +72,5 @@ async def run(
         end_iso=end_iso,
         description=description,
         location=location,
+        attendee_user_ids=attendee_user_ids or [],
     )
